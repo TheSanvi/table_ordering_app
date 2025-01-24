@@ -8,6 +8,11 @@ class PreparingFoodPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Order Status'),
+        backgroundColor: Colors.yellow,
+        automaticallyImplyLeading: false,
+      ),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -29,7 +34,7 @@ class PreparingFoodPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Feel free to order more while your food is getting prepared',
+                  'Your order #219 will be served at Table T2',
                   style: TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
@@ -46,7 +51,7 @@ class PreparingFoodPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                   ),
                   child: const Text(
-                    'Back to Menu',
+                    'Order More',
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   ),
                 ),
