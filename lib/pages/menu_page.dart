@@ -4,7 +4,6 @@ import '../models/menu_item.dart';
 import '../models/cart_item.dart';
 
 import '../widgets/menu_item_card.dart';
-import 'category_page.dart';
 import 'cart_page.dart';
 
 class MenuPage extends StatefulWidget {
@@ -17,6 +16,7 @@ class MenuPage extends StatefulWidget {
 class _MenuPageState extends State<MenuPage> {
   String _selectedCategory = 'All Menu';
   final List<CartItem> _cart = [];
+  bool _isSideMenuOpen = false;
 
   final Map<String, List<MenuItem>> _menuItems = {
     'Chapathi': [
@@ -144,6 +144,7 @@ class _MenuPageState extends State<MenuPage> {
   void _selectCategory(String category) {
     setState(() {
       _selectedCategory = category;
+      _isSideMenuOpen = false;
     });
   }
 
@@ -161,6 +162,12 @@ class _MenuPageState extends State<MenuPage> {
     });
   }
 
+  void _toggleSideMenu() {
+    setState(() {
+      _isSideMenuOpen = !_isSideMenuOpen;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final displayedItems = _selectedCategory == 'All Menu'
@@ -168,30 +175,43 @@ class _MenuPageState extends State<MenuPage> {
         : _menuItems[_selectedCategory] ?? [];
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Food Menu'),
+        backgroundColor: Colors.yellow,
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: _toggleSideMenu,
+        ),
+      ),
       body: Row(
         children: [
-          SideMenu(
-            selectedCategory: _selectedCategory,
-            onSelectCategory: _selectCategory,
-          ),
+          if (_isSideMenuOpen)
+            SideMenu(
+              selectedCategory: _selectedCategory,
+              onSelectCategory: _selectCategory,
+            ),
           Expanded(
             child: Column(
               children: [
                 Expanded(
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemCount: displayedItems.length,
-                    itemBuilder: (context, index) {
-                      final item = displayedItems[index];
-                      return MenuItemCard(
-                        item: item,
-                        onAddToCart: () => _addToCart(item),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return GridView.builder(
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: constraints.maxWidth > 900 ? 3 : constraints.maxWidth > 600 ? 2 : 1,
+                          childAspectRatio: 0.75,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
+                        itemCount: displayedItems.length,
+                        itemBuilder: (context, index) {
+                          final item = displayedItems[index];
+                          return MenuItemCard(
+                            item: item,
+                            onAddToCart: () => _addToCart(item),
+                          );
+                        },
                       );
                     },
                   ),

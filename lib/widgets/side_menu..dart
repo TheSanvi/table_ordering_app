@@ -23,7 +23,7 @@ class SideMenu extends StatelessWidget {
     ];
 
     return Container(
-      width: 250,
+      width: MediaQuery.of(context).size.width < 600 ? MediaQuery.of(context).size.width * 0.7 : 250,
       color: Colors.grey[200],
       child: Column(
         children: [
