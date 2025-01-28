@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/cart_item.dart';
-import 'order_confirmation_page.dart';
+import 'order_details_page.dart';
 
 class CartPage extends StatelessWidget {
   final List<CartItem> cart;
@@ -56,7 +56,7 @@ class CartPage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const OrderConfirmationPage(),
+                          builder: (context) => OrderDetailsPage(cart: cart),
                         ),
                       );
                     },
@@ -65,7 +65,7 @@ class CartPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: const Text(
-                      'Confirm Order',
+                      'Continue',
                       style: TextStyle(fontSize: 18, color: Colors.black),
                     ),
                   ),

@@ -6,5 +6,5 @@ class CartItem {
 
   CartItem({required this.item, this.quantity = 1});
 
-  double get total => item.price * quantity;
+  int get total => (item.price * quantity).round(); // Cast to integer.
 }
