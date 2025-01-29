@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import '../widgets/modal_popup.dart';
-import 'order_preparing_page.dart';
 
-class OrderConfirmationPage extends StatelessWidget {
-  const OrderConfirmationPage({Key? key}) : super(key: key);
+class OrderPreparingPage extends StatelessWidget {
+  const OrderPreparingPage({Key? key}) : super(key: key);
 
   static Future<void> show(BuildContext context) {
     return showCustomModalBottomSheet(
       context: context,
       width: 350,
-      child: const OrderConfirmationPage(),
+      child: const OrderPreparingPage(),
     );
   }
 
@@ -20,14 +19,12 @@ class OrderConfirmationPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.check_circle_outline,
-            size: 80,
-            color: Color(0xFFFFEB3B),
+          const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFEB3B)),
           ),
           const SizedBox(height: 24),
           const Text(
-            'Order Confirmed!',
+            'Preparing Your Order',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -35,7 +32,7 @@ class OrderConfirmationPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           const Text(
-            'Your order has been placed successfully. We\'ll start preparing your food right away!',
+            'Our chefs are working hard to prepare your delicious meal. It won\'t be long!',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16),
           ),
@@ -44,8 +41,8 @@ class OrderConfirmationPage extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the OrderConfirmationPage
-                OrderPreparingPage.show(context);
+                Navigator.of(context).pop(); // Close the OrderPreparingPage
+                // Here you would typically navigate back to the main menu or a order history page
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFEB3B),
@@ -55,7 +52,7 @@ class OrderConfirmationPage extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                'Track Order',
+                'Back to Main Menu',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

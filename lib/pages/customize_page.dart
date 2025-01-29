@@ -1,28 +1,34 @@
 import 'package:flutter/material.dart';
 import '../widgets/modal_popup.dart';
+import '../models/menu_item.dart';
+import '../models/cart_item.dart';
+import 'order_details_page.dart';
 
-class CustomizePage extends StatelessWidget {
-  final String itemName;
-  final String imageUrl;
+class CustomizePage extends StatefulWidget {
+  final MenuItem item;
+  final List<CartItem> cart;
 
   const CustomizePage({
-    super.key,
-    required this.itemName,
-    required this.imageUrl,
-  });
+    Key? key,
+    required this.item,
+    required this.cart,
+  }) : super(key: key);
 
-  static Future<void> show(BuildContext context, {
-    required String itemName,
-    required String imageUrl,
-  }) {
+  static Future<void> show(BuildContext context, {required MenuItem item, required List<CartItem> cart}) {
     return showCustomModalBottomSheet(
       context: context,
-      child: CustomizePage(
-        itemName: itemName,
-        imageUrl: imageUrl,
-      ),
+      child: CustomizePage(item: item, cart: cart),
     );
   }
+
+  @override
+  _CustomizePageState createState() => _CustomizePageState();
+}
+
+class _CustomizePageState extends State<CustomizePage> {
+  int quantity = 1;
+  String selectedSize = 'Regular';
+  List<String> selectedToppings = [];
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +42,7 @@ class CustomizePage extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  imageUrl,
+                  widget.item.imageUrl,
                   width: 48,
                   height: 48,
                   fit: BoxFit.cover,
@@ -44,7 +50,7 @@ class CustomizePage extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Text(
-                itemName,
+                widget.item.name,
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -54,29 +60,37 @@ class CustomizePage extends StatelessWidget {
           ),
         ),
         const Divider(),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Servings',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildQuantitySelector(),
+                  const SizedBox(height: 16),
+                  _buildSizeSelector(),
+                  const SizedBox(height: 16),
+                  _buildToppingsSelector(),
+                ],
               ),
-              const SizedBox(height: 16),
-              _buildServingOption('Full'),
-              const SizedBox(height: 8),
-              _buildServingOption('1/2'),
-            ],
+            ),
           ),
         ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: ElevatedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              final customizedItem = CartItem(
+                item: widget.item,
+                quantity: quantity,
+                size: selectedSize,
+                toppings: selectedToppings,
+              );
+              final updatedCart = List<CartItem>.from(widget.cart)..add(customizedItem);
+              Navigator.of(context).pop(); // Close the CustomizePage
+              OrderDetailsPage.show(context, updatedCart);
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFFEB3B),
               minimumSize: const Size(double.infinity, 48),
@@ -85,7 +99,7 @@ class CustomizePage extends StatelessWidget {
               ),
             ),
             child: const Text(
-              'Done',
+              'Add to Order',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -98,23 +112,79 @@ class CustomizePage extends StatelessWidget {
     );
   }
 
-  Widget _buildServingOption(String size) {
+  Widget _buildQuantitySelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(size),
+        const Text('Quantity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         Row(
           children: [
             IconButton(
               icon: const Icon(Icons.remove),
-              onPressed: () {},
+              onPressed: () {
+                if (quantity > 1) {
+                  setState(() => quantity--);
+                }
+              },
             ),
-            const Text('0'),
+            Text('$quantity'),
             IconButton(
               icon: const Icon(Icons.add),
-              onPressed: () {},
+              onPressed: () {
+                setState(() => quantity++);
+              },
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSizeSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Size', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: ['Regular', 'Large', 'Extra Large'].map((size) {
+            return ChoiceChip(
+              label: Text(size),
+              selected: selectedSize == size,
+              onSelected: (selected) {
+                setState(() => selectedSize = size);
+              },
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToppingsSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Toppings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: ['Cheese', 'Onions', 'Tomatoes', 'Olives'].map((topping) {
+            return FilterChip(
+              label: Text(topping),
+              selected: selectedToppings.contains(topping),
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    selectedToppings.add(topping);
+                  } else {
+                    selectedToppings.remove(topping);
+                  }
+                });
+              },
+            );
+          }).toList(),
         ),
       ],
     );

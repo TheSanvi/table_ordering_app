@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import '../models/cart_item.dart';
-import 'order_bill_page.dart';
-import '../widgets/modal_popup.dart';
+import 'package:food_menu/models/cart_item.dart';
 
-class OrderDetailsPage extends StatelessWidget {
+import '../widgets/modal_popup.dart';
+import 'order_bill_page.dart';
+import 'customize_page.dart';
+
+class OrderDetailsPage extends StatefulWidget {
   final List<CartItem> cart;
 
   const OrderDetailsPage({
-    super.key,
+    Key? key,
     required this.cart,
-  });
+  }) : super(key: key);
 
   static Future<void> show(BuildContext context, List<CartItem> cart) {
     return showCustomModalBottomSheet(
@@ -17,6 +19,19 @@ class OrderDetailsPage extends StatelessWidget {
       width: 450,
       child: OrderDetailsPage(cart: cart),
     );
+  }
+
+  @override
+  _OrderDetailsPageState createState() => _OrderDetailsPageState();
+}
+
+class _OrderDetailsPageState extends State<OrderDetailsPage> {
+  late List<CartItem> _cart;
+
+  @override
+  void initState() {
+    super.initState();
+    _cart = List.from(widget.cart);
   }
 
   @override
@@ -54,7 +69,7 @@ class OrderDetailsPage extends StatelessWidget {
               ],
             ),
           ),
-          if (cart.isEmpty)
+          if (_cart.isEmpty)
             Padding(
               padding: const EdgeInsets.all(32),
               child: Column(
@@ -74,23 +89,30 @@ class OrderDetailsPage extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
-              itemCount: cart.length,
+              itemCount: _cart.length,
               itemBuilder: (context, index) {
-                final item = cart[index];
-                return Card(
-                  child: ListTile(
-                    title: Text(
-                      item.item.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text('₹${item.item.price.toStringAsFixed(2)}'),
-                    trailing: Text('x${item.quantity}'),
+                final item = _cart[index];
+                return ListTile(
+                  title: Text(item.item.name),
+                  subtitle: Text('Size: ${item.size}, Toppings: ${item.toppings.join(", ")}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('${item.quantity}x'),
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _editItem(index),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _removeItem(index),
+                      ),
+                    ],
                   ),
                 );
               },
             ),
-          if (cart.isEmpty) buildRecommendations(),
+          if (_cart.isEmpty) buildRecommendations(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -126,20 +148,20 @@ class OrderDetailsPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      OrderBillPage.show(context, cart);
+                    onPressed: _cart.isEmpty ? null : () {
+                      OrderBillPage.show(context, _cart);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFFEB3B),
-                      minimumSize: const Size(double.infinity, 56),
+                      minimumSize: const Size(double.infinity, 48),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: const Text(
-                      'Confirm Order',
+                      'Proceed to Billing',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
@@ -249,8 +271,26 @@ class OrderDetailsPage extends StatelessWidget {
     );
   }
 
+  void _editItem(int index) {
+    CustomizePage.show(
+      context,
+      item: _cart[index].item,
+      cart: _cart,
+    ).then((_) {
+      setState(() {
+        // The cart will be updated in the CustomizePage
+      });
+    });
+  }
+
+  void _removeItem(int index) {
+    setState(() {
+      _cart.removeAt(index);
+    });
+  }
+
   double calculateSubtotal() {
-    return cart.fold(0.0, (total, item) => total + (item.item.price * item.quantity));
+    return _cart.fold(0.0, (total, item) => total + (item.item.price * item.quantity));
   }
 
   double calculateGST(double subtotal) {
